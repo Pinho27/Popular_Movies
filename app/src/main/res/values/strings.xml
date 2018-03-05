@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+
+    <!-- Content description -->
+    <string name="movie_poster_desc">Movie poster</string>
+    <string name="title_activity_scrolling">ScrollingActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="backdrop_detail_screen">Movie backdrop</string>
+
+    <!-- Titles -->
+    <string name="title_date">Release date</string>
+    <string name="title_genres">Genres</string>
+    <string name="title_overview">Overview</string>
+
+    <!-- Menu titles -->
+    <string name="menu_title_popularity">Order by popularity</string>
+    <string name="menu_title_rating">Order by rating</string>
+
+
+
+
+</resources>
