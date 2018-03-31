@@ -22,6 +22,11 @@
             android:name=".ScrollingActivity"
             android:label="@string/title_activity_scrolling"
             android:theme="@style/AppTheme.NoActionBar" />
+        <provider
+            android:authorities="pt.pinho.popularmovies.ContentProvider"
+            android:name=".ContentProvider"
+            android:multiprocess="true"
+            android:exported="true" />
     </application>
 
 </manifest>

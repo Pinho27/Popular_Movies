@@ -4,7 +4,7 @@ package pt.pinho.popularmovies;
  * Created by luispinho on 01/03/2018.
  */
 
-public class Review {
+class Review {
 
     private String id, author, content, url;
 

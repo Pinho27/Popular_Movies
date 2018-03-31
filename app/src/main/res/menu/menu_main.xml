@@ -4,7 +4,5 @@
         android:checkableBehavior="single">
         <item android:id="@+id/menu_sort_by_popular"
             android:title="@string/menu_title_popularity"/>
-        <item android:id="@+id/menu_sort_by_rating"
-            android:title="@string/menu_title_rating"/>
     </group>
 </menu>

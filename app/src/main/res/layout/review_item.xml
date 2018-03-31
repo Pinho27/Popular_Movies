@@ -17,7 +17,8 @@
             android:layout_marginBottom="8dp"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:id="@+id/review_title"/>
+            android:id="@+id/review_title"
+            android:text="@string/review_by"/>
 
         <TextView
             android:layout_width="match_parent"

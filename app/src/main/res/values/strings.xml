@@ -17,6 +17,23 @@
     <string name="menu_title_rating">Order by rating</string>
 
 
+    <!-- Error messages -->
+    <string name="network_error_movies">Network error while fetching movies!</string>
+    <string name="network_error_genres">Network error while fetching genres!</string>
+    <string name="image_error">Error getting image!</string>
 
+    <!-- Details screen strings -->
+    <string name="review_by">Review by %1$s</string>
+    <string name="vote_average">Vote average:</string>
+    <string name="release_date">Release Date:</string>
+    <string name="genres">Genres</string>
+    <string name="trailer">Trailer</string>
+    <string name="trailer_icon_description">Trailer icon</string>
+    <string name="background">Background</string>
+    <string name="rating">Rating %1$s/10</string>
+    <string name="popular_nav">Popular</string>
+    <string name="rating_nav">Rating</string>
+    <string name="favourites">Favourites</string>
+    <string name="content_desc_trailer_thumbnail">Trailer thumbnail</string>
 
 </resources>

@@ -1,13 +1,13 @@
 package pt.pinho.popularmovies;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
@@ -17,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -35,43 +36,72 @@ import java.util.List;
 
 public class ScrollingActivity extends AppCompatActivity {
 
-    ImageView imageView, background, img_trailer, movie_poster;
-    TextView title_genres, title_date, desc_overview, vote_average, date_value, genres_value;
-    RecyclerView recycler_reviews;
-    Context context;
-    CardView details_main_info;
-    int dominant_color;
+    private RecyclerView recycler_reviews, recycler_trailers;
+    private Context ctx;
 
-    final String apiKeyTmdb = BuildConfig.API_KEY;
+    private final String apiKeyTmdb = BuildConfig.API_KEY;
 
     Movie movie;
+    boolean isFav = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scrolling);
         Toolbar toolbar = findViewById(R.id.toolbar);
-
         final FloatingActionButton fab = findViewById(R.id.fab);
+
+        ctx = this;
+
+        movie = getIntent().getParcelableExtra("movie");
+
+        String[] projections = {"id"};
+        String[] selectionArguments = {movie.getId()};
+
+        Cursor cursor = getContentResolver().query(ContentProvider.CONTENT_URI, projections, "id = ?", selectionArguments, null, null);
+
+        assert cursor != null;
+        if(cursor.moveToFirst()){
+            fab.setImageDrawable(ContextCompat.getDrawable(ctx, R.drawable.ic_favorite_red_24dp));
+            isFav = true;
+        }
+        cursor.close();
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
+                if(!isFav){
+                    ContentValues values = new ContentValues();
+                    values.put("id", movie.getId());
+                    values.put("vote_average", movie.getVote_average());
+                    values.put("title", movie.getTitle());
+                    values.put("poster", movie.getPoster());
+                    values.put("overview", movie.getOverview().replaceAll("'", "\'"));
+                    values.put("release_date", movie.getRelease_date());
+                    values.put("background", movie.getBackground());
+
+                    if(ContentUris.parseId(getContentResolver().insert(ContentProvider.CONTENT_URI, values)) != -1) {
+                        fab.setImageDrawable(ContextCompat.getDrawable(ctx, R.drawable.ic_favorite_red_24dp));
+                        isFav = true;
+                    }
+                }else {
+                    String selection = "id LIKE ?";
+                    String[] selectionArgs = { movie.getId() };
+
+                    if(getContentResolver().delete(ContentProvider.CONTENT_URI, selection, selectionArgs) != 0) {
+                        fab.setImageDrawable(ContextCompat.getDrawable(ctx, R.drawable.ic_favorite_border_black_24dp));
+                        isFav = false;
+                    }
+                }
             }
         });
 
-        movie = (Movie) getIntent().getSerializableExtra("movie");
-        dominant_color = getIntent().getExtras().getInt("dominant_color");
-        Log.v("sdfs", String.valueOf(dominant_color));
-
-        //fab.setBackgroundTintList(ColorStateList.valueOf(dominant_color));
-
-
         toolbar.setTitle(movie.getTitle());
 
-        imageView = findViewById(R.id.movie_poster_detail);
-        background = findViewById(R.id.background);
-        movie_poster = findViewById(R.id.movie_poster);
+        ImageView imageView = findViewById(R.id.movie_poster_detail);
+        ImageView background = findViewById(R.id.background);
+        ImageView movie_poster = findViewById(R.id.movie_poster);
 
         Picasso.with(this).load("http://image.tmdb.org/t/p/original" + movie.getPoster()).into(background);
 
@@ -80,25 +110,25 @@ public class ScrollingActivity extends AppCompatActivity {
 
         Picasso.with(this).load("http://image.tmdb.org/t/p/w342" + movie.getPoster()).into(movie_poster);
 
+        TextView desc_overview = findViewById(R.id.desc_overview);
+        TextView vote_average = findViewById(R.id.vote_average);
+        TextView genres_value = findViewById(R.id.genres_value);
+        TextView genres_title = findViewById(R.id.genres_title);
+        TextView date_value = findViewById(R.id.release_value);
 
-        desc_overview = findViewById(R.id.desc_overview);
-        vote_average = findViewById(R.id.vote_average);
-        img_trailer = findViewById(R.id.trailer_icon);
-
-
-        genres_value = findViewById(R.id.genres_value);
-        date_value = findViewById(R.id.release_value);
-
-        ArrayList<String> genress = movie.getGenres();
-        for(int i=0; i<genress.size();i++)
-            genres_value.append(genress.get(i) + ", ");
+        if(movie.getGenres() != null){
+            ArrayList<String> genress = movie.getGenres();
+            for(int i=0; i<genress.size();i++)
+                genres_value.append(genress.get(i) + ", ");
+        }else {
+            genres_title.setVisibility(View.GONE);
+            genres_value.setVisibility(View.GONE);
+        }
 
         date_value.setText(movie.getRelease_date());
-
-
-
         vote_average.setText(movie.getVote_average());
         desc_overview.setText(movie.getOverview());
+
 
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -108,23 +138,24 @@ public class ScrollingActivity extends AppCompatActivity {
         PagerSnapHelper helper = new PagerSnapHelper();
         helper.attachToRecyclerView(recycler_reviews);
 
-        context = this;
+        LinearLayoutManager layoutManager2
+                = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        recycler_trailers = findViewById(R.id.recycler_trailers);
+        recycler_trailers.setLayoutManager(layoutManager2);
 
-/*        details_main_info = findViewById(R.id.details_main_info);
-        details_main_info.setCardBackgroundColor(Color.TRANSPARENT);
-        details_main_info.setCardElevation(0);
-        */
+        PagerSnapHelper helper2 = new PagerSnapHelper();
+        helper2.attachToRecyclerView(recycler_trailers);
+
 
         getReviews();
-        getTrailer();
+        getTrailers();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home)
+            finish();
 
-        if (item.getItemId() == android.R.id.home) {
-            finish(); // close this activity and return to preview activity (if there is any)
-        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -139,8 +170,6 @@ public class ScrollingActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
 
-                        Log.v("dssf", response.toString());
-
                         JSONArray a = null;
                         try {
                             a = response.getJSONArray("results");
@@ -152,7 +181,7 @@ public class ScrollingActivity extends AppCompatActivity {
                         List<Review> reviewList = parseJson(a);
 
                         if(!reviewList.isEmpty()){
-                            ReviewAdapter reviewAdapter = new ReviewAdapter(context, parseJson(a));
+                            ReviewAdapter reviewAdapter = new ReviewAdapter(ctx, reviewList);
                             recycler_reviews.setAdapter(reviewAdapter);
                             recycler_reviews.setVisibility(View.VISIBLE);
                         }
@@ -160,11 +189,9 @@ public class ScrollingActivity extends AppCompatActivity {
 
                     }
                 }, new Response.ErrorListener() {
-
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-
+                        Toast.makeText(ctx, "Error getting reviews!", Toast.LENGTH_SHORT).show();
                     }
                 });
 
@@ -197,7 +224,8 @@ public class ScrollingActivity extends AppCompatActivity {
         return reviewList;
     }
 
-    void getTrailer(){
+    void getTrailers(){
+        final List<Trailer> trailerList = new ArrayList<>();
 
         String url = "http://api.themoviedb.org/3/movie/" + movie.getId() + "/videos?api_key=" + apiKeyTmdb;
         Log.v("sd", url);
@@ -208,21 +236,20 @@ public class ScrollingActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
 
-                        Log.v("dssf", response.toString());
-
                         JSONArray a;
                         try {
                             a = response.getJSONArray("results");
-                            JSONObject trailerResponse = a.getJSONObject(0);
 
-                            final String movieTrailerUrl = "http://youtube.com/watch?v=" + trailerResponse.optString("key");
+                            for(int i=0; i<a.length();i++){
+                                JSONObject trailerResponse = a.getJSONObject(i);
+                                trailerList.add(new Trailer(trailerResponse.optString("id"), trailerResponse.optString("key"), trailerResponse.optString("name")));
+                            }
 
-                            img_trailer.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(movieTrailerUrl)));
-                                }
-                            });
+                            if(!trailerList.isEmpty()){
+                                TrailerAdapter trailerAdapter = new TrailerAdapter(ctx, trailerList);
+                                recycler_trailers.setAdapter(trailerAdapter);
+                                recycler_trailers.setVisibility(View.VISIBLE);
+                            }
 
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -230,11 +257,9 @@ public class ScrollingActivity extends AppCompatActivity {
 
                     }
                 }, new Response.ErrorListener() {
-
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO Auto-generated method stub
-
+                        Toast.makeText(ctx, "Error getting trailer!", Toast.LENGTH_SHORT).show();
                     }
                 });
 

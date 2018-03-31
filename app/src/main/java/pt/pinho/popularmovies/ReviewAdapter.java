@@ -17,18 +17,17 @@ import java.util.List;
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewViewHolder> {
 
-    private Context context;
-    private List<Review> reviewList;
+    final private Context context;
+    final private List<Review> reviewList;
+
     ReviewAdapter(Context context, List<Review> reviewList) {
         this.context = context;
         this.reviewList = reviewList;
-
     }
 
     @Override
     public ReviewAdapter.ReviewViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(context).inflate(R.layout.review_item, parent, false);
-
         return new ReviewViewHolder(itemView);
     }
 
@@ -36,7 +35,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
     public void onBindViewHolder(ReviewAdapter.ReviewViewHolder holder, int position) {
 
         Review review = reviewList.get(position);
-        holder.review_title.setText("Review by " + review.getAuthor());
+        holder.review_title.setText(context.getResources().getString(R.string.review_by, review.getAuthor()));
         holder.review_content.setText(review.getContent());
     }
 

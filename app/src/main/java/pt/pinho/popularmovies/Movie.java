@@ -1,20 +1,22 @@
 package pt.pinho.popularmovies;
 
-import java.io.Serializable;
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 
 /**
  * Created by luispinho on 22/02/2018.
  */
 
-class Movie implements Serializable {
+class Movie implements Parcelable {
 
     private String vote_count, id, vote_average, title, popularity, poster, original_lang, original_title, background,
     adult, overview, release_date;
     private ArrayList<String> genres;
 
 
-    public Movie(String vote_count, String id, String vote_average, String title, String popularity, String poster, String original_lang, String original_title, String background, String adult,
+    Movie(String vote_count, String id, String vote_average, String title, String popularity, String poster, String original_lang, String original_title, String background, String adult,
                  String overview, String release_date, ArrayList<String> genres) {
         this.vote_count = vote_count;
         this.id = id;
@@ -30,6 +32,34 @@ class Movie implements Serializable {
         this.release_date = release_date;
         this.genres = genres;
     }
+
+    private Movie(Parcel in) {
+        vote_count = in.readString();
+        id = in.readString();
+        vote_average = in.readString();
+        title = in.readString();
+        popularity = in.readString();
+        poster = in.readString();
+        original_lang = in.readString();
+        original_title = in.readString();
+        background = in.readString();
+        adult = in.readString();
+        overview = in.readString();
+        release_date = in.readString();
+        genres = in.createStringArrayList();
+    }
+
+    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel in) {
+            return new Movie(in);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 
     public String getVote_count() {
         return vote_count;
@@ -133,5 +163,27 @@ class Movie implements Serializable {
 
     public void setGenres(ArrayList<String> genres) {
         this.genres = genres;
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(vote_count);
+        dest.writeString(id);
+        dest.writeString(vote_average);
+        dest.writeString(title);
+        dest.writeString(popularity);
+        dest.writeString(poster);
+        dest.writeString(original_lang);
+        dest.writeString(original_title);
+        dest.writeString(background);
+        dest.writeString(adult);
+        dest.writeString(overview);
+        dest.writeString(release_date);
+        dest.writeStringList(genres);
     }
 }
